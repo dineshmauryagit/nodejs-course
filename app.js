@@ -1,17 +1,27 @@
-const http = require('http');
-
+const path = require('path');
 const express = require('express');
+
+const bodyParser = require('body-parser');
+const expressHbs = require('express-handlebars');
+
+
 const app = express();
+app.engine('handlebars', expressHbs());
+app.set('view engine','pug');
+app.set('views','views');
 
-app.use((req, res, next) => {
-    console.log('In the middleware');
-    next();
+const adminData = require('./routes/admin');
+const shopRoutes = require('./routes/shop');
+
+app.use(bodyParser.urlencoded({extended:false}));
+app.use(express.static(path.join(__dirname,'public')));
+
+app.use(shopRoutes);
+app.use('/admin',adminData.routes);
+
+app.use((req,res,next) => {
+    res.status(404).render('4O4', {pageTitle : 'Page Not Found'});
+    //res.status(404).sendFile(path.join(__dirname,'views','4O4.html'));
 });
 
-app.use((req, res, next) => {
-    console.log('In the another middleware');
-    res.send('<h1>Hello from Express!</h1>')
-});
-
-const server = http.createServer(app);
-server.listen(3000);
+app.listen(3000);
